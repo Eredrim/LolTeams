@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">LolTeams</string>
+    <string name="action_settings">Paramètres</string>
+    <string name="action_add">Ajouter un joueur</string>
 </resources>
