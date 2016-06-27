@@ -1,12 +1,16 @@
 package epsi.lolteams;
 
-import android.app.AlertDialog;
+import android.app.DialogFragment;
 import android.content.Context;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+
+import epsi.lolteams.fragments.SearchPlayerDialogFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -16,6 +20,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        String[] myStringArray={"A","B","C"};
+        ArrayAdapter<String> myAdapter=new
+                ArrayAdapter<String>(
+                this,
+                android.R.layout.simple_list_item_1,
+                myStringArray);
+        ListView myList=
+                (ListView) findViewById(R.id.listView);
+        myList.setAdapter(myAdapter);
+
     }
 
     @Override
@@ -29,22 +43,14 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_add:
-                createAddDialog();
+                DialogFragment newFragment = new SearchPlayerDialogFragment();
+                newFragment.show(this.getFragmentManager(), "playerSearch");
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-    public void createAddDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-
-        builder.setMessage("bonjour")
-                .setTitle("test");
-
-        AlertDialog dialog = builder.create();
-        //Gaddle compile ne marche pas
-    }
 
     public Context getActivity() {
         return this.getBaseContext();
