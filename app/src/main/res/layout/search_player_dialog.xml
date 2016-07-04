@@ -17,9 +17,9 @@
         android:id="@+id/userInputDialog"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="test"
+        android:hint="Entrez le nom d&apos;un joueur."
         android:inputType="text"
-        android:textColorHint="#000000"
+        android:textColorHint="#cdcdcd"
         android:textColorHighlight="#009dff" />
 
 </LinearLayout>

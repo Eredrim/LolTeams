@@ -10,25 +10,32 @@ import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
 import epsi.lolteams.fragments.SearchPlayerDialogFragment;
 
 public class MainActivity extends AppCompatActivity {
 
     private Context activity;
+    private List ListItems = new ArrayList<>();
+    private ArrayAdapter<String> listAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        String[] myStringArray={"A","B","C"};
-        ArrayAdapter<String> myAdapter=new
-                ArrayAdapter<String>(
+        ListItems = new ArrayList<String>() {{ add("A"); add("B"); add("C"); }};
+        listAdapter =new
+                ArrayAdapter<>(
                 this,
                 android.R.layout.simple_list_item_1,
-                myStringArray);
+                ListItems);
         ListView myList=
                 (ListView) findViewById(R.id.listView);
-        myList.setAdapter(myAdapter);
+        myList.setAdapter(listAdapter);
 
     }
 
@@ -54,5 +61,14 @@ public class MainActivity extends AppCompatActivity {
 
     public Context getActivity() {
         return this.getBaseContext();
+    }
+
+    public List<String> getListItems() {
+        return ListItems;
+    }
+
+    public void setListItems(List listItems) {
+        this.ListItems = (List<String>) listItems;
+        listAdapter.notifyDataSetChanged();
     }
 }
