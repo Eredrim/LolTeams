@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
     private List ListItems = new ArrayList<>();
     private ArrayAdapter<String> listAdapter;
     private ListView listSummoner;
-    private List listMatchmaking = new ArrayList();
+    private ArrayList<String> listMatchmaking = new ArrayList<>();
     private Button matchMakingButton;
 
     @Override
@@ -62,9 +62,9 @@ public class MainActivity extends AppCompatActivity {
         matchMakingButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-            //    afficherToast("Nombre joueurs séléctionnés: " + listMatchmaking.size());
                 System.out.println("intent avant");
                 Intent intent = new Intent(MainActivity.this, MatchMakingActivity.class);
+                intent.putStringArrayListExtra("summonerList", listMatchmaking);
                 MainActivity.this.startActivity(intent);
                 System.out.println("intent après");
             }
