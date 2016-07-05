@@ -63,7 +63,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
             //    afficherToast("Nombre joueurs séléctionnés: " + listMatchmaking.size());
-                Intent intent = new Intent(activity, MatchMakingActivity.class);
+                System.out.println("intent avant");
+                Intent intent = new Intent(MainActivity.this, MatchMakingActivity.class);
+                MainActivity.this.startActivity(intent);
+                System.out.println("intent après");
             }
         });
     }
