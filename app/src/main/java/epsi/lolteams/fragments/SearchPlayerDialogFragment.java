@@ -31,7 +31,7 @@ public class SearchPlayerDialogFragment extends DialogFragment {
                         List<String> listItems = mainAct.getListItems();
                         String playerName = ((EditText)dialogView.findViewById(R.id.userInputDialog)).getText().toString();
                         //Appel à l'api de GoatYeah pour savoir si le joueur existe.
-                        boolean test = false;
+                        boolean test = true;
                         if(test){
                             listItems.add(playerName);
                             mainAct.setListItems(listItems);

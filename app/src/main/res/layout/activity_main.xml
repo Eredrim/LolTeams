@@ -19,13 +19,13 @@
         android:layout_marginLeft="0dp"
         android:layout_marginRight="0dp"
         android:layout_marginTop="0dp"
-        android:layout_above="@+id/button" />
+        android:layout_above="@+id/buttonMatchmaking" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Make teams !"
-        android:id="@+id/button"
+        android:id="@+id/buttonMatchmaking"
         android:layout_alignParentBottom="true"
         android:layout_alignRight="@+id/listView"
         android:layout_alignEnd="@+id/listView"
@@ -43,7 +43,7 @@
         android:textOn="5vs5"
         android:enabled="true"
         android:checked="true"
-        android:layout_alignTop="@+id/button"
+        android:layout_alignTop="@+id/buttonMatchmaking"
         android:elegantTextHeight="false" />
 
 </RelativeLayout>
