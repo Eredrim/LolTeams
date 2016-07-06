@@ -4,8 +4,6 @@ import android.app.DialogFragment;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -16,57 +14,99 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.Toast;
 
-import net.rithms.riot.dto.Static.ItemList;
-
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import epsi.lolteams.api.Player;
 import epsi.lolteams.fragments.SearchPlayerDialogFragment;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final String CACHE_FILE_NAME = "players.json";
+    private File cacheFile;
+
     private Context activity;
-    private List ListItems = new ArrayList<>();
+    private List listItems = new ArrayList<>();
     private ArrayAdapter<String> listAdapter;
     private ListView listSummoner;
     private ArrayList<String> listMatchmaking = new ArrayList<>();
     private Button matchMakingButton;
+    private Switch teamSizeSwitch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ListItems = new ArrayList<String>() {{ add("A"); add("B"); add("C"); }};
+
+        cacheFile = new File(getFilesDir(), CACHE_FILE_NAME);
+        //Manager initialization
+        try {
+            if (!cacheFile.exists())
+                cacheFile.createNewFile();
+            //Load Cache
+            LoLTeams.getInstance().playerManager.load(new FileInputStream(cacheFile));
+        } catch (IOException ignore) {}
+
+        listItems = new ArrayList<String>();
+        List<Player> players = LoLTeams.getInstance().playerManager.getPlayers();
+        for(Player p : players) {
+            listItems.add(p.getName());
+        }
+
+        teamSizeSwitch = (Switch) findViewById(R.id.switch1);
+        listSummoner = (ListView) findViewById(R.id.listView);
+        matchMakingButton = (Button) findViewById(R.id.buttonMatchmaking);
+
         listAdapter =new
                 ArrayAdapter<>(
                 this,
                 android.R.layout.simple_list_item_1,
-                ListItems);
-        ListView myList=
-                (ListView) findViewById(R.id.listView);
-        myList.setAdapter(listAdapter);
+                listItems);
 
-        listSummoner = (ListView) findViewById(R.id.listView);
+        listSummoner.setAdapter(listAdapter);
         listSummoner.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 selectSummoner(adapterView, view, i, l);
             }
         });
 
-        matchMakingButton = (Button) findViewById(R.id.buttonMatchmaking);
         matchMakingButton.setOnClickListener(new View.OnClickListener() {
-            @Override
             public void onClick(View view) {
-                System.out.println("intent avant");
+                if(listMatchmaking.size() == 0)
+                    return;
                 Intent intent = new Intent(MainActivity.this, MatchMakingActivity.class);
-                intent.putStringArrayListExtra("summonerList", listMatchmaking);
+                intent.putStringArrayListExtra("players", listMatchmaking);
+                intent.putExtra("mode", teamSizeSwitch.isChecked());
                 MainActivity.this.startActivity(intent);
-                System.out.println("intent après");
             }
         });
+
+
+    }
+
+    protected void onStop() {
+        super.onStop();
+        try {
+            if (!cacheFile.exists())
+                cacheFile.createNewFile();
+            LoLTeams.getInstance().playerManager.save(new FileOutputStream(cacheFile));
+        } catch (IOException ignore) {}
+    }
+
+    protected void onDestroy() {
+        super.onDestroy();
+        try {
+            if (!cacheFile.exists())
+                cacheFile.createNewFile();
+            LoLTeams.getInstance().playerManager.save(new FileOutputStream(cacheFile));
+        } catch (IOException ignore) {}
     }
 
     @Override
@@ -94,11 +134,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public List<String> getListItems() {
-        return ListItems;
+        return listItems;
     }
 
     public void setListItems(List listItems) {
-        this.ListItems = (List<String>) listItems;
+        this.listItems = (List<String>) listItems;
         listAdapter.notifyDataSetChanged();
     }
 
@@ -107,18 +147,11 @@ public class MainActivity extends AppCompatActivity {
         if (!isSummonerInListMatchmaking(summoner)) {
             listMatchmaking.add(summoner);
             listSummoner.getChildAt(i).setBackgroundColor(Color.GREEN);
-            afficherToast("joueur séléctionné: " + (CharSequence) adapterView.getItemAtPosition(i));
         }
         else {
             listMatchmaking.remove(summoner);
             listSummoner.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
         }
-    }
-
-    public void afficherToast(CharSequence text) {
-        Context context = getApplicationContext();
-        Toast toast = Toast.makeText(context, text, Toast.LENGTH_SHORT);
-        toast.show();
     }
 
     public boolean isSummonerInListMatchmaking(String summoner) {

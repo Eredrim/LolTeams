@@ -8,10 +8,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
@@ -25,13 +25,8 @@ public class PlayerManager {
     private List<Player> players;
     private Lock lock = new ReentrantLock();
 
-    public PlayerManager(FileInputStream cacheFileInputStream) {
+    public PlayerManager() {
         this.players = new ArrayList<>();
-        try {
-            load(cacheFileInputStream);
-        } catch (IOException e) {
-            Log.w("PlayerManager", e);
-        }
     }
 
     /**
@@ -114,7 +109,7 @@ public class PlayerManager {
             removePlayer(p);
     }
 
-    private void load(FileInputStream in) throws IOException {
+    public void load(InputStream in) throws IOException {
         Log.i("PlayerManager", "Loading cache file");
         JsonParser parser = new JsonParser();
         JsonElement root = parser.parse(new InputStreamReader(in));
@@ -156,7 +151,7 @@ public class PlayerManager {
         Log.i("PlayerManager", "Done loading cache file");
     }
 
-    private void save(FileOutputStream out) throws IOException {
+    public void save(OutputStream out) throws IOException {
         JsonArray list = new JsonArray();
         //Serialize each Player to the list
         for(Player p : players) {
@@ -178,5 +173,9 @@ public class PlayerManager {
         out.write(serial.getBytes());
         out.flush();
         out.close();
+    }
+
+    public List<Player> getPlayers() {
+        return players;
     }
 }

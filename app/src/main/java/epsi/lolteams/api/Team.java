@@ -46,4 +46,8 @@ public class Team {
     public void removePlayer(Player player) {
         players.remove(player);
     }
+
+    public List<Player> getPlayers() {
+        return players;
+    }
 }

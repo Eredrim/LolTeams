@@ -12,9 +12,13 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import java.util.List;
+import java.util.Objects;
 
+import epsi.lolteams.LoLTeams;
 import epsi.lolteams.MainActivity;
 import epsi.lolteams.R;
+import epsi.lolteams.api.Player;
+import epsi.lolteams.api.Riot;
 
 public class SearchPlayerDialogFragment extends DialogFragment {
     @Override
@@ -30,14 +34,14 @@ public class SearchPlayerDialogFragment extends DialogFragment {
                         MainActivity mainAct = (MainActivity) getActivity();
                         List<String> listItems = mainAct.getListItems();
                         String playerName = ((EditText)dialogView.findViewById(R.id.userInputDialog)).getText().toString();
-                        //Appel à l'api de GoatYeah pour savoir si le joueur existe.
-                        boolean test = true;
-                        if(test){
-                            listItems.add(playerName);
+
+                        // use Riot Api to fetch player
+                        Player player = Riot.getInstance().getPlayer(playerName);
+                        if(player != null) {
+                            LoLTeams.getInstance().playerManager.addPlayer(player);
+                            listItems.add(player.getName());
                             mainAct.setListItems(listItems);
-                        }
-                        else
-                        {
+                        } else {
                             AlertDialog.Builder errDialogBuilder = new AlertDialog.Builder(getActivity());
                             errDialogBuilder.setTitle("Erreur");
                             errDialogBuilder.setMessage("Le joueur n'existe pas.");

@@ -1,7 +1,10 @@
 package epsi.lolteams.api;
 
+import android.os.AsyncTask;
+
 import net.rithms.riot.api.RiotApi;
 import net.rithms.riot.api.RiotApiException;
+import net.rithms.riot.constant.Region;
 import net.rithms.riot.dto.League.League;
 import net.rithms.riot.dto.League.LeagueEntry;
 import net.rithms.riot.dto.Summoner.Summoner;
@@ -19,9 +22,48 @@ public class Riot {
         return instance;
     }
 
-    private Timer timer;
+    private final class GetPlayerByName extends AsyncTask<String, Integer, Summoner> {
+        protected Summoner doInBackground(String... params) {
+            try {
+                return api.getSummonerByName(params[0]);
+            } catch (RiotApiException ignore) {
+                ignore.printStackTrace();
+                return null;
+            }
+        }
+    }
+
+    private final class GetPlayerById extends AsyncTask<Long, Integer, Summoner> {
+        protected Summoner doInBackground(Long... params) {
+            try {
+                return api.getSummonerById(params[0]);
+            } catch (RiotApiException ignore) {
+                ignore.printStackTrace();
+                return null;
+            }
+        }
+    }
+
+    private final class GetPlayerBySummoner extends AsyncTask<Summoner, Integer, List<League>> {
+        protected List<League> doInBackground(Summoner... params) {
+            try {
+                return api.getLeagueBySummoner(params[0].getId());
+            } catch (RiotApiException ignore) {
+                ignore.printStackTrace();
+                return null;
+            }
+        }
+    }
+
+
+    private Timer timer = new Timer();
     private Lock lock = new ReentrantLock();
     private RiotApi api = new RiotApi("1d750187-fe64-45a5-8242-3412e1877e19");
+
+
+    private Riot() {
+        api.setRegion(Region.EUW);
+    }
 
     private void ensureAPItiming() {
         boolean waiting = true;
@@ -45,8 +87,10 @@ public class Riot {
     public Player getPlayer(long summonerId) {
         try {
             ensureAPItiming();
-            return getPlayer(api.getSummonerById(summonerId));
-        } catch (RiotApiException ignore) {
+            GetPlayerById task = new GetPlayerById();
+            Summoner summoner = task.execute(summonerId).get();
+            return getPlayer(summoner);
+        } catch (Exception ignore) {
             return null;
         }
     }
@@ -54,8 +98,10 @@ public class Riot {
     public Player getPlayer(String name) {
         try {
             ensureAPItiming();
-            return getPlayer(api.getSummonerByName(name));
-        } catch (RiotApiException ignore) {
+            GetPlayerByName task = new GetPlayerByName();
+            Summoner summoner = task.execute(name).get();
+            return getPlayer(summoner);
+        } catch (Exception ignore) {
             return null;
         }
     }
@@ -67,7 +113,8 @@ public class Riot {
         LeagueEntry playerEntry = null;
         try {
             ensureAPItiming();
-            List<League> leagues = api.getLeagueBySummoner(summoner.getId());
+            GetPlayerBySummoner task = new GetPlayerBySummoner();
+            List<League> leagues = task.execute(summoner).get();
             for(League league : leagues) {
                 if(league.getQueue().equals("RANKED_SOLO_5x5")) {
                     soloQueue = league;
@@ -81,7 +128,7 @@ public class Riot {
                         playerEntry = entry;
                 }
             }
-        } catch (RiotApiException e) {
+        } catch (Exception e) {
             soloQueue = null;
             playerEntry = null;
         }
