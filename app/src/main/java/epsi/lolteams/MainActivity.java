@@ -21,8 +21,6 @@ import android.widget.Toast;
 import net.rithms.riot.dto.Static.ItemList;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import epsi.lolteams.fragments.SearchPlayerDialogFragment;

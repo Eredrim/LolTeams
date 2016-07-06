@@ -2,19 +2,20 @@ package epsi.lolteams.api;
 
 import android.util.Log;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import fr.hadriel.serial.struct.StInt;
-import fr.hadriel.serial.struct.StList;
-import fr.hadriel.serial.struct.StObject;
-import fr.hadriel.serial.struct.StString;
-import fr.hadriel.serial.struct.StructEntry;
 
 /**
  * Created by HaDriel on 05/07/2016.
@@ -115,26 +116,35 @@ public class PlayerManager {
 
     private void load(FileInputStream in) throws IOException {
         Log.i("PlayerManager", "Loading cache file");
-        StructEntry root = StructEntry.deserialize(in);
-        if(root instanceof StList) {
-            StList list = (StList) root;
-            Log.i("PlayerManager", "Extracting " + list.count() + " Players");
-            for(StructEntry entry : list) {
-                if(!(entry instanceof StObject))
+        JsonParser parser = new JsonParser();
+        JsonElement root = parser.parse(new InputStreamReader(in));
+        in.close();
+        if(root instanceof JsonArray) {
+            JsonArray list = (JsonArray) root;
+            Log.i("PlayerManager", "Extracting " + list.size() + " Players");
+            for(JsonElement entry : list) {
+                if(!(entry instanceof JsonObject))
                     continue;
-                StObject object = (StObject) entry;
+                JsonObject object = (JsonObject) entry;
                 //resolve each member
-                StructEntry member;
+                JsonElement member;
+                JsonPrimitive value;
                 member = object.get(Player.NAME);
-                String name = member instanceof StString ? ((StString) member).get() : null;
+                value = member instanceof JsonPrimitive ? (JsonPrimitive) member : null;
+                String name = value == null || !value.isString() ? null : value.getAsString();
                 member = object.get(Player.ID);
-                int id = member instanceof StInt ? ((StInt) member).value : -1;
+                value = member instanceof JsonPrimitive ? (JsonPrimitive) member : null;
+                int id = value == null || !value.isNumber() ? -1 : value.getAsInt();
                 member = object.get(Player.SUMMONER_LEVEL);
-                int summonerLevel = member instanceof StInt ? ((StInt) member).value : 0;
+                value = member instanceof JsonPrimitive ? (JsonPrimitive) member : null;
+                int summonerLevel = value == null || !value.isNumber() ? 0 : value.getAsInt();
                 member = object.get(Player.TIER);
-                int tier = member instanceof StInt ? ((StInt) member).value : 0;
+                value = member instanceof JsonPrimitive ? (JsonPrimitive) member : null;
+                int tier = value == null || !value.isNumber() ? -1 : value.getAsInt();
                 member = object.get(Player.DIVISION);
-                int division = member instanceof StInt ? ((StInt) member).value : 0;
+                value = member instanceof JsonPrimitive ? (JsonPrimitive) member : null;
+                int division =  value == null || !value.isNumber() ? -1 : value.getAsInt();
+
                 if(name == null || id == -1) {
                     Log.w("PlayerManager", "Warning, incoherent Player registered. Skipping this Entry");
                     continue;
@@ -147,7 +157,7 @@ public class PlayerManager {
     }
 
     private void save(FileOutputStream out) throws IOException {
-        StList list = new StList();
+        JsonArray list = new JsonArray();
         //Serialize each Player to the list
         for(Player p : players) {
             //Try to filter any corrupted Players
@@ -155,15 +165,18 @@ public class PlayerManager {
                 Log.w("PlayerManager", "Weird Player Entry (null name or invalid id) : Not saved");
                 continue;
             }
-            StObject obj = new StObject();
-            obj.put(Player.NAME, p.getName());
-            obj.put(Player.ID, p.getId());
-            obj.put(Player.SUMMONER_LEVEL, p.getSummonerLevel());
-            obj.put(Player.TIER, p.getTier());
-            obj.put(Player.DIVISION, p.getDivision());
+            JsonObject obj = new JsonObject();
+            obj.addProperty(Player.NAME, p.getName());
+            obj.addProperty(Player.ID, p.getId());
+            obj.addProperty(Player.SUMMONER_LEVEL, p.getSummonerLevel());
+            obj.addProperty(Player.TIER, p.getTier());
+            obj.addProperty(Player.DIVISION, p.getDivision());
             list.add(obj);
             Log.i("PlayerManager", "Serialized Player " + p.getName());
         }
-        list.serialize(out); // write to the file.
+        String serial = list.toString();
+        out.write(serial.getBytes());
+        out.flush();
+        out.close();
     }
 }
